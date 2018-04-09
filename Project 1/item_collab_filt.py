@@ -5,10 +5,12 @@ class User():
     
     id = 0
     mean = 0
-    movies = np.zeros((1,2), dtype=np.uint16)
+    movies = pd.DataFrame()
 
-    def __init__(self, id):
+    def __init__(self, id, mean, movies):
         self.id = id
+        self.mean = mean
+        self.movies = movies
         
 def read_data():
     return pd.read_csv('train_data.csv')
@@ -19,21 +21,15 @@ def process_data(data):
     users = []
 
     for id in range(number_of_users):
-        users.append(User(id + 1))
-
-    for user in users:
-        
-        movies_list = data.loc[data['user_id'] == user.id]
-        movies_list = movies_list.sort_values('movie_id')
-
-        user.mean = data["rating"].mean()
-
-        for index, movie in movies_list.iterrows():
-            
-            user.movies = np.append(user.movies, [[movie[1], movie[2]]], axis=0)
-        
-        user.movies = np.delete(user.movies, 0, 0)     
     
+        movies = data.loc[(data['user_id'] == id + 1), ['movie_id', 'rating']].sort_values('movie_id')
+        mean = movies["rating"].mean()
+        users.append(User(id + 1, mean, movies))
+
+    # print("ID: ", users[0].id)
+    # print("Mean: ", users[0].mean)
+    # print("Movies: ", users[0].movies)
+
     return users
 
 def similarity(firstItem, secondItem):
@@ -43,6 +39,7 @@ def prediction(user, item, numberOfNeighbors):
     pass
 
 def main():
+
     data = read_data()
     u = process_data(data)
 
