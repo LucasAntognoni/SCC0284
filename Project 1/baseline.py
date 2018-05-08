@@ -1,19 +1,23 @@
 import numpy as np
 import pandas as pd
 import math
+from timeit import default_timer as timer
 
 def read_data():
 
     train = pd.read_csv('./data/train_data.csv')
     test = pd.read_csv('./data/test_data.csv')
 
-    users = train.user_id.unique()
-    mean = np.zeros((users[-1]))
+    sum_ratings = 0
 
-    for user in users:
-        mean[user - 1] = train.loc[train['user_id'] == user]["rating"].mean()
+    ratings = train['rating']
 
-    return train, test, mean.mean()
+    for r in ratings:
+        sum_ratings += r
+
+    mean = sum_ratings / train.shape[0]
+    
+    return train, test, mean
 
 def baseline(data, global_mean):
 
@@ -45,16 +49,28 @@ def predict(q_id, user, movie, m_bias, u_bias, mean):
     
     prediction = mean + u_bias[user - 1] + m_bias[movie - 1]
 
+    if prediction > 5:
+        prediction = 5.0
+
     print('%d,%f' % (q_id,prediction))
 
 def main():
 
     data, test, mean = read_data()
     
+    start = timer()
+
     movies_bias, users_bias = baseline(data, mean)
     
     for row in test.itertuples():
         predict(row.id, row.user_id, row.movie_id, movies_bias, users_bias, mean)
+
+    end = timer()
+    
+    time_elapsed = end - start
+
+    #print(time_elapsed)
+
 
 if __name__ == '__main__':
     main()
