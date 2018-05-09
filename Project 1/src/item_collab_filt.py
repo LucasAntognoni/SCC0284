@@ -1,10 +1,12 @@
 import numpy as np
 import pandas as pd
 import math
+from timeit import default_timer as timer
 
 def read_data():
         
     df = pd.read_csv('train_data.csv')
+    test = pd.read_csv('./data/test_data.csv')
 
     users = df.user_id.unique()
     mean = np.zeros((users[-1]))
@@ -12,7 +14,7 @@ def read_data():
     for user in users:
         mean[user - 1] = df.loc[df['user_id'] == user]["rating"].mean()
 
-    return df, mean
+    return df, test, mean
 
 def similarity(data, mean):
 
@@ -49,11 +51,11 @@ def similarity(data, mean):
                 else:
                     similarity_matrix[mi - 1][mj - 1] = sum_a / (math.sqrt(sum_b) * math.sqrt(sum_c))
                 
-                print('Similarity[%d][%d]: %f' % (mi, mj, similarity_matrix[mi - 1][mj - 1]))
+                # print('Similarity[%d][%d]: %f' % (mi, mj, similarity_matrix[mi - 1][mj - 1]))
             
     return similarity_matrix
 
-def prediction(user, item, neighbors, similarity, data):
+def predict(q_id, user, item, neighbors, similarity, data):
     
     user = data.loc[data['user_id'] == user]
     similar_itens = similarity[item - 1][:]
@@ -66,13 +68,27 @@ def prediction(user, item, neighbors, similarity, data):
         sum_a += similar_itens[index] * user.loc[user['movie_id'] == (index + 1)].rating.values[0]
         sum_b += similar_itens[index]
 
-    print(sum_a / sum_b)
+    # print("%d,%f"  % (q_id,sum_a / sum_b))
 
 
 def main():
-    data, mean = read_data()
+    data, test, mean = read_data()
     matrix = similarity(data, mean)
-    # prediction(1, 1, 4, matrix, data)
+    
+    start_global = timer()
+
+    for row in test.itertuples():
+        start_it = timer()
+
+        predict(row.id, row.user_id, row.movie_id, 20, matrix, data)
+        
+        end_it = timer()
+        time_elapsed_it = end_it - start_it
+        print(row.id, time_elapsed_it)
+
+    end_global = timer()
+    time_elapsed_global = end_global - start_global
+    print(time_elapsed_global)
 
 if __name__ == '__main__':
     main()

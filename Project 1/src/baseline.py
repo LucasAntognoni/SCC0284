@@ -52,24 +52,28 @@ def predict(q_id, user, movie, m_bias, u_bias, mean):
     if prediction > 5:
         prediction = 5.0
 
-    print('%d,%f' % (q_id,prediction))
+    # print('%d,%f' % (q_id,prediction))
 
 def main():
 
     data, test, mean = read_data()
     
-    start = timer()
+    start_global = timer()
 
     movies_bias, users_bias = baseline(data, mean)
     
     for row in test.itertuples():
+        start_it = timer()
         predict(row.id, row.user_id, row.movie_id, movies_bias, users_bias, mean)
+        end_it = timer()
+        time_elapsed_it = end_it - start_it
+        print(row.id, time_elapsed_it)
 
-    end = timer()
+    end_global = timer()
     
-    time_elapsed = end - start
+    time_elapsed_global = end_global - start_global
 
-    #print(time_elapsed)
+    print(time_elapsed_global)
 
 
 if __name__ == '__main__':

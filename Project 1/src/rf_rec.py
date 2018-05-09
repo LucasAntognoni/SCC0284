@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import math
+from timeit import default_timer as timer
 
 def read_data():
         
@@ -30,14 +31,25 @@ def rf_rec(id, user, item, data):
 
         ratings.append(a * b)
 
-    print('%d,%d' % (id, ratings.index(max(ratings))))
+    # print('%d,%d' % (id, ratings.index(max(ratings))))
 
 def main():
     data, test = read_data()
 
-    print('id,rating')
+    start_global = timer()
+
     for row in test.itertuples():
+        start_it = timer()
+
         rf_rec(row.id, row.user_id, row.movie_id, data)
+        
+        end_it = timer()
+        time_elapsed_it = end_it - start_it
+        print(row.id, time_elapsed_it)
+
+    end_global = timer()
+    time_elapsed_global = end_global - start_global
+    print(time_elapsed_global)
 
 if __name__ == '__main__':
     main()

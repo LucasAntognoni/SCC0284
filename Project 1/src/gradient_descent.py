@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import math as mt
+from timeit import default_timer as timer
 
 def read_data():
 
@@ -67,16 +68,30 @@ def predict(q_id, user, movie, bu, bi, p, q, k, mean):
     
     prediction = b_u_i + s_p_q
 
-    print("%d,%f"  % (q_id,prediction))
+    # print("%d,%f"  % (q_id,prediction))
 
 def main():
 
     data, test, mean= read_data()
 
+    start_global = timer()
+
     bu, bi, p, q, errors = calculateSVD(data, mean, 2, 0.05, 0.002, 10)
 
+    start_global = timer()
+
     for row in test.itertuples():
+        start_it = timer()
+
         predict(row.id, row.user_id, row.movie_id, bu, bi, p, q, 2, mean)
+        
+        end_it = timer()
+        time_elapsed_it = end_it - start_it
+        print(row.id, time_elapsed_it)
+
+    end_global = timer()
+    time_elapsed_global = end_global - start_global
+    print(time_elapsed_global)
 
 if __name__ == '__main__':
     main()
